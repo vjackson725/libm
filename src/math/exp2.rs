@@ -368,7 +368,7 @@ pub fn exp2(mut x: f64) -> f64 {
     /* Reduce x, computing z, i0, and k. */
     let ui = f64::to_bits(x + redux);
     let mut i0 = ui as u32;
-    i0 += TBLSIZE as u32 / 2;
+    i0 = i0.wrapping_add(TBLSIZE as u32 / 2);
     let ku = i0 / TBLSIZE as u32 * TBLSIZE as u32;
     let ki = ku as i32 / TBLSIZE as i32;
     i0 %= TBLSIZE as u32;

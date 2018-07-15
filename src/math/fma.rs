@@ -43,7 +43,7 @@ fn mul(x: u64, y: u64) -> (u64, u64) {
     t1 = xlo * ylo;
     t2 = xlo * yhi + xhi * ylo;
     t3 = xhi * yhi;
-    let lo = t1 + (t2 << 32);
+    let lo = t1.wrapping_add(t2 << 32);
     let hi = t3 + (t2 >> 32) + (t1 > lo) as u64;
     (hi, lo)
 }
@@ -115,16 +115,16 @@ pub fn fma(x: f64, y: f64, z: f64) -> f64 {
     let mut nonzero: i32 = 1;
     if samesign {
         /* r += z */
-        rlo += zlo;
+        rlo = rlo.wrapping_add(zlo);
         rhi += zhi + (rlo < zlo) as u64;
     } else {
         /* r -= z */
         let t = rlo;
-        rlo -= zlo;
-        rhi = rhi - zhi - (t < rlo) as u64;
+        rlo = rlo.wrapping_sub(zlo);
+        rhi = rhi.wrapping_sub(zhi).wrapping_sub((t < rlo) as u64);
         if (rhi >> 63) != 0 {
-            rlo = (-(rlo as i64)) as u64;
-            rhi = (-(rhi as i64)) as u64 - (rlo != 0) as u64;
+            rlo = rlo.wrapping_neg();
+            rhi = rhi.wrapping_neg() - (rlo != 0) as u64;
             sign = (sign == 0) as i32;
         }
         nonzero = (rhi != 0) as i32;
